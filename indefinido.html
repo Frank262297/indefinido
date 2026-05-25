@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kahoot-Quiz: Spanisch – Pretérito indefinido</title>
+  <style>
+    :root {
+      --bg1: #4f46e5;
+      --bg2: #9333ea;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --green: #16a34a;
+      --red: #dc2626;
+      --blue: #2563eb;
+      --yellow: #f59e0b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .quiz-container {
+      width: 100%;
+      max-width: 900px;
+      background: var(--card);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0 0 8px;
+      font-size: 2rem;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      font-weight: bold;
+    }
+
+    .progress-wrapper {
+      height: 12px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0%;
+      background: var(--blue);
+      transition: width 0.25s ease;
+    }
+
+    .question {
+      font-size: 1.6rem;
+      font-weight: bold;
+      text-align: center;
+      margin: 28px 0;
+      line-height: 1.35;
+    }
+
+    .answers {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    button.answer {
+      border: none;
+      border-radius: 18px;
+      padding: 22px 18px;
+      font-size: 1.15rem;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      min-height: 92px;
+      transition: transform 0.12s ease, opacity 0.2s ease, filter 0.2s ease;
+    }
+
+    button.answer:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(1.06);
+    }
+
+    button.answer:disabled {
+      cursor: not-allowed;
+      opacity: 0.82;
+    }
+
+    .a0 { background: #e11d48; }
+    .a1 { background: #2563eb; }
+    .a2 { background: #f59e0b; }
+    .a3 { background: #16a34a; }
+
+    .correct {
+      outline: 6px solid #22c55e;
+      filter: brightness(1.1);
+    }
+
+    .wrong {
+      outline: 6px solid #ef4444;
+      filter: grayscale(0.25) brightness(0.85);
+    }
+
+    .feedback {
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin: 22px 0 8px;
+      min-height: 32px;
+    }
+
+    .explanation {
+      text-align: center;
+      color: var(--muted);
+      min-height: 28px;
+      margin-bottom: 16px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .control-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 14px 24px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      background: #111827;
+      color: white;
+    }
+
+    .control-btn.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .result {
+      text-align: center;
+      padding: 28px 8px;
+    }
+
+    .result h2 {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .hidden { display: none; }
+
+    @media (max-width: 700px) {
+      .answers { grid-template-columns: 1fr; }
+      .question { font-size: 1.3rem; }
+      button.answer { min-height: 76px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="quiz-container">
+    <h1>Spanisch-Quiz</h1>
+    <div class="subtitle">Pretérito indefinido · 25 Fragen · Kahoot-Stil</div>
+
+    <section id="quiz">
+      <div class="topbar">
+        <div id="questionCounter">Frage 1 / 25</div>
+        <div id="scoreDisplay">Punkte: 0</div>
+      </div>
+
+      <div class="progress-wrapper">
+        <div class="progress" id="progress"></div>
+      </div>
+
+      <div class="question" id="questionText"></div>
+
+      <div class="answers" id="answers"></div>
+
+      <div class="feedback" id="feedback"></div>
+      <div class="explanation" id="explanation"></div>
+
+      <div class="controls">
+        <button class="control-btn hidden" id="nextBtn">Nächste Frage</button>
+        <button class="control-btn secondary" id="restartBtn">Neu starten</button>
+      </div>
+    </section>
+
+    <section class="result hidden" id="result">
+      <h2>Quiz beendet!</h2>
+      <p id="finalScore"></p>
+      <p id="finalComment"></p>
+      <div class="controls">
+        <button class="control-btn" id="restartBtnResult">Noch einmal spielen</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const questions = [
+      {
+        question: "Yo ______ a Barcelona el año pasado.",
+        answers: ["viajé", "viajaste", "viajó", "viajamos"],
+        correct: 0,
+        explanation: "Bei 'yo' endet ein regelmäßiges -ar-Verb im indefinido auf -é: viajé."
+      },
+      {
+        question: "Tú ______ mucho ayer.",
+        answers: ["estudié", "estudiaste", "estudió", "estudiaron"],
+        correct: 1,
+        explanation: "Tú-Form bei -ar-Verben: -aste."
+      },
+      {
+        question: "Ella ______ una carta.",
+        answers: ["escribí", "escribiste", "escribió", "escribieron"],
+        correct: 2,
+        explanation: "Él/ella/usted-Form bei -ir-Verben: -ió."
+      },
+      {
+        question: "Nosotros ______ la película anoche.",
+        answers: ["vimos", "vieron", "visteis", "vi"],
+        correct: 0,
+        explanation: "'Ver' ist unregelmäßig: nosotros vimos."
+      },
+      {
+        question: "Ellos ______ tarde a clase.",
+        answers: ["llegó", "llegamos", "llegaron", "llegaste"],
+        correct: 2,
+        explanation: "Ellos-Form bei -ar-Verben: -aron."
+      },
+      {
+        question: "¿Cuál es la forma correcta de 'tener' para 'yo' en indefinido?",
+        answers: ["tení", "tuve", "tengo", "tenía"],
+        correct: 1,
+        explanation: "Tener ist unregelmäßig: yo tuve."
+      },
+      {
+        question: "Ayer nosotros ______ paella.",
+        answers: ["comimos", "comieron", "comí", "comiste"],
+        correct: 0,
+        explanation: "Nosotros-Form bei -er-Verben: -imos."
+      },
+      {
+        question: "Vosotros ______ muy bien en la fiesta.",
+        answers: ["bailasteis", "bailaron", "bailé", "bailó"],
+        correct: 0,
+        explanation: "Vosotros-Form bei -ar-Verben: -asteis."
+      },
+      {
+        question: "Mi madre ______ al supermercado esta mañana.",
+        answers: ["fui", "fuiste", "fue", "fueron"],
+        correct: 2,
+        explanation: "Ir/ser im indefinido: él/ella fue."
+      },
+      {
+        question: "Yo no ______ nada ayer.",
+        answers: ["hice", "hizo", "hiciste", "hicieron"],
+        correct: 0,
+        explanation: "Hacer ist unregelmäßig: yo hice."
+      },
+      {
+        question: "¿Qué forma passt? Tú ______ la verdad.",
+        answers: ["dije", "dijiste", "dijo", "dijeron"],
+        correct: 1,
+        explanation: "Decir ist unregelmäßig: tú dijiste."
+      },
+      {
+        question: "Ellas ______ en Madrid durante dos semanas.",
+        answers: ["estuvo", "estuvimos", "estuvieron", "estuviste"],
+        correct: 2,
+        explanation: "Estar ist unregelmäßig: ellas estuvieron."
+      },
+      {
+        question: "Yo ______ un regalo para mi hermano.",
+        answers: ["compré", "compraste", "compró", "compraron"],
+        correct: 0,
+        explanation: "Yo-Form bei -ar-Verben: -é."
+      },
+      {
+        question: "¿Cuál es correcto?",
+        answers: ["Yo hablé con Ana ayer.", "Yo hablaba con Ana ayer.", "Yo he hablado con Ana ayer.", "Yo hablar con Ana ayer."],
+        correct: 0,
+        explanation: "Mit 'ayer' verwendet man typischerweise indefinido: hablé."
+      },
+      {
+        question: "Nosotros ______ la tarea el lunes.",
+        answers: ["hicimos", "hizo", "hicieron", "hice"],
+        correct: 0,
+        explanation: "Hacer: nosotros hicimos."
+      },
+      {
+        question: "Mis amigos ______ a casa a las diez.",
+        answers: ["volví", "volviste", "volvió", "volvieron"],
+        correct: 3,
+        explanation: "Ellos-Form bei volver: volvieron."
+      },
+      {
+        question: "Tú ______ un café después de comer.",
+        answers: ["tomé", "tomaste", "tomó", "tomaron"],
+        correct: 1,
+        explanation: "Tú-Form bei -ar-Verben: -aste."
+      },
+      {
+        question: "El profesor ______ la pregunta.",
+        answers: ["repitió", "repetí", "repetiste", "repitieron"],
+        correct: 0,
+        explanation: "Repetir hat Stammwechsel in der 3. Person: repitió."
+      },
+      {
+        question: "Los niños ______ temprano.",
+        answers: ["dormí", "dormiste", "durmió", "durmieron"],
+        correct: 3,
+        explanation: "Dormir hat Stammwechsel in der 3. Person Plural: durmieron."
+      },
+      {
+        question: "Yo ______ la puerta.",
+        answers: ["abrí", "abriste", "abrió", "abrieron"],
+        correct: 0,
+        explanation: "Abrir ist regelmäßig im indefinido: yo abrí."
+      },
+      {
+        question: "¿Cuál es la forma correcta de 'poner' para 'ellos'?",
+        answers: ["ponieron", "pusieron", "ponaron", "pusieron"],
+        correct: 1,
+        explanation: "Poner ist unregelmäßig: ellos pusieron."
+      },
+      {
+        question: "Ustedes ______ la respuesta correcta.",
+        answers: ["supieron", "supe", "supo", "supiste"],
+        correct: 0,
+        explanation: "Saber ist unregelmäßig: ustedes supieron."
+      },
+      {
+        question: "Yo ______ a mi abuela el domingo.",
+        answers: ["visité", "visitaste", "visitó", "visitaron"],
+        correct: 0,
+        explanation: "Yo-Form bei visitar: visité."
+      },
+      {
+        question: "Ella ______ una canción muy bonita.",
+        answers: ["canté", "cantaste", "cantó", "cantaron"],
+        correct: 2,
+        explanation: "Él/ella/usted-Form bei -ar-Verben: -ó."
+      },
+      {
+        question: "¿Cuál Satz steht im Pretérito indefinido?",
+        answers: ["He comido una tortilla.", "Comí una tortilla ayer.", "Como una tortilla.", "Comía una tortilla."],
+        correct: 1,
+        explanation: "'Comí' ist Pretérito indefinido."
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+
+    const quizEl = document.getElementById("quiz");
+    const resultEl = document.getElementById("result");
+    const questionCounter = document.getElementById("questionCounter");
+    const scoreDisplay = document.getElementById("scoreDisplay");
+    const progress = document.getElementById("progress");
+    const questionText = document.getElementById("questionText");
+    const answersEl = document.getElementById("answers");
+    const feedback = document.getElementById("feedback");
+    const explanation = document.getElementById("explanation");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartBtnResult = document.getElementById("restartBtnResult");
+    const finalScore = document.getElementById("finalScore");
+    const finalComment = document.getElementById("finalComment");
+
+    function loadQuestion() {
+      answered = false;
+      const q = questions[currentQuestion];
+      questionCounter.textContent = `Frage ${currentQuestion + 1} / ${questions.length}`;
+      scoreDisplay.textContent = `Punkte: ${score}`;
+      progress.style.width = `${(currentQuestion / questions.length) * 100}%`;
+      questionText.textContent = q.question;
+      answersEl.innerHTML = "";
+      feedback.textContent = "";
+      explanation.textContent = "";
+      nextBtn.classList.add("hidden");
+
+      q.answers.forEach((answer, index) => {
+        const btn = document.createElement("button");
+        btn.className = `answer a${index}`;
+        btn.textContent = answer;
+        btn.addEventListener("click", () => selectAnswer(index, btn));
+        answersEl.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(selectedIndex) {
+      if (answered) return;
+      answered = true;
+
+      const q = questions[currentQuestion];
+      const buttons = document.querySelectorAll("button.answer");
+
+      buttons.forEach((btn, index) => {
+        btn.disabled = true;
+        if (index === q.correct) btn.classList.add("correct");
+        if (index === selectedIndex && selectedIndex !== q.correct) btn.classList.add("wrong");
+      });
+
+      if (selectedIndex === q.correct) {
+        score++;
+        feedback.textContent = "✅ Richtig!";
+        feedback.style.color = "var(--green)";
+      } else {
+        feedback.textContent = "❌ Leider falsch.";
+        feedback.style.color = "var(--red)";
+      }
+
+      scoreDisplay.textContent = `Punkte: ${score}`;
+      explanation.textContent = q.explanation;
+      nextBtn.classList.remove("hidden");
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        loadQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      progress.style.width = "100%";
+      quizEl.classList.add("hidden");
+      resultEl.classList.remove("hidden");
+      finalScore.textContent = `Du hast ${score} von ${questions.length} Punkten erreicht.`;
+
+      const percent = score / questions.length;
+      if (percent >= 0.9) {
+        finalComment.textContent = "¡Excelente! Das indefinido sitzt sehr gut.";
+      } else if (percent >= 0.7) {
+        finalComment.textContent = "¡Muy bien! Nur ein paar Formen noch wiederholen.";
+      } else if (percent >= 0.5) {
+        finalComment.textContent = "Gut gemacht. Übe besonders die unregelmäßigen Formen.";
+      } else {
+        finalComment.textContent = "Weiter üben: regelmäßige Endungen und unregelmäßige Verben wiederholen.";
+      }
+    }
+
+    function restartQuiz() {
+      currentQuestion = 0;
+      score = 0;
+      resultEl.classList.add("hidden");
+      quizEl.classList.remove("hidden");
+      loadQuestion();
+    }
+
+    nextBtn.addEventListener("click", nextQuestion);
+    restartBtn.addEventListener("click", restartQuiz);
+    restartBtnResult.addEventListener("click", restartQuiz);
+
+    loadQuestion();
+  </script>
+</body>
+</html>
